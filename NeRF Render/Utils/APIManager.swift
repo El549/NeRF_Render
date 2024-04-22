@@ -23,9 +23,9 @@ struct APIManager {
     
     // MARK: - 用户操作
     
-    // 登录
-    func login(email: String, password: String, completion: @escaping (ApiResponse<User>?, Error?) -> Void) {
-        let url = URL(string: "http://example.com/nerf/login/")!
+    // 注册-已完成
+    func register(email: String, password: String, completion: @escaping (ApiResponse<[User]>?, Error?) -> Void) {
+        let url = URL(string: "http://127.0.0.1:4523/m2/4334433-3977645-default/165131829")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -38,21 +38,22 @@ struct APIManager {
                 return
             }
             do {
-                let response = try self.decoder.decode(ApiResponse<User>.self, from: data)
+                let response = try self.decoder.decode(ApiResponse<[User]>.self, from: data)
                 completion(response, nil)
             } catch {
                 completion(nil, error)
             }
         }.resume()
     }
+
     
-    // 修改密码
-    func changePassword(oldPassword: String, newPassword: String, completion: @escaping (ApiResponse<Empty>?, Error?) -> Void) {
-        let url = URL(string: "http://example.com/nerf/change_password/")!
+    // 登录-已完成
+    func login(email: String, password: String, completion: @escaping (ApiResponse<[User]>?, Error?) -> Void) {
+        let url = URL(string: "http://127.0.0.1:4523/m2/4334433-3977645-default/165138154?apifoxApiId=165138154")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        let body = ["old_password": oldPassword, "new_password": newPassword]
+        let body = ["email": email, "password": password]
         request.httpBody = try? JSONEncoder().encode(body)
         
         URLSession.shared.dataTask(with: request) { data, response, error in
@@ -61,7 +62,7 @@ struct APIManager {
                 return
             }
             do {
-                let response = try self.decoder.decode(ApiResponse<Empty>.self, from: data)
+                let response = try self.decoder.decode(ApiResponse<[User]>.self, from: data)
                 completion(response, nil)
             } catch {
                 completion(nil, error)
@@ -69,18 +70,44 @@ struct APIManager {
         }.resume()
     }
     
-    // 注销
-    func logout(completion: @escaping (ApiResponse<Empty>?, Error?) -> Void) {
-        let url = URL(string: "http://example.com/nerf/logout/")!
+    // 修改密码-已完成
+    func changePassword(oldPassword: String, newPassword: String, completion: @escaping (ApiResponse<Empty>?, Error?) -> Void) {
+        let url = URL(string: "http://127.0.0.1:4523/m2/4334433-3977645-default/165812624")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let body = ["old_password": oldPassword, "new_password": newPassword]
+        request.httpBody = try? JSONEncoder().encode(body)
+        
         URLSession.shared.dataTask(with: url) { data, response, error in
-            guard let data = data, error == nil else {
+            guard let httpResponse = response as? HTTPURLResponse, error == nil else {
                 completion(nil, error)
                 return
             }
-            do {
-                let response = try self.decoder.decode(ApiResponse<Empty>.self, from: data)
-                completion(response, nil)
-            } catch {
+            if httpResponse.statusCode == 200 {
+                completion(ApiResponse(success: true, message: "Logout successfully", data: Empty()), nil)  // No content to return, just indicate success
+            } else {
+                let error = NSError(domain: "", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Failed to Logout"])
+                completion(nil, error)
+            }
+        }.resume()
+    }
+    
+    // 注销-已完成
+    func logout(completion: @escaping (ApiResponse<Empty>?, Error?) -> Void) {
+        let url = URL(string: "http://127.0.0.1:4523/m2/4334433-3977645-default/165141137")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            guard let httpResponse = response as? HTTPURLResponse, error == nil else {
+                completion(nil, error)
+                return
+            }
+            if httpResponse.statusCode == 200 {
+                completion(ApiResponse(success: true, message: "Logout successfully", data: Empty()), nil)  // No content to return, just indicate success
+            } else {
+                let error = NSError(domain: "", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Failed to Logout"])
                 completion(nil, error)
             }
         }.resume()
@@ -88,7 +115,7 @@ struct APIManager {
     
     // MARK: - 项目操作
     
-    // 查询所有项目
+    // 查询所有项目-已完成
     func fetchProjects(completion: @escaping (ApiResponse<[Project]>?, Error?) -> Void) {
         let url = URL(string: "http://127.0.0.1:4523/m2/4334433-3977645-default/165314656")!
         URLSession.shared.dataTask(with: url) { data, response, error in
@@ -105,8 +132,8 @@ struct APIManager {
         }.resume()
     }
     
-    // 创建项目
-    func createProject(title: String, completion: @escaping (ApiResponse<Project>?, Error?) -> Void) {
+    // 创建项目-已完成
+    func createProject(title: String, completion: @escaping (ApiResponse<[Project]>?, Error?) -> Void) {
         let url = URL(string: "http://127.0.0.1:4523/m2/4334433-3977645-default/165314619")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -120,7 +147,7 @@ struct APIManager {
                 return
             }
             do {
-                let response = try self.decoder.decode(ApiResponse<Project>.self, from: data)
+                let response = try self.decoder.decode(ApiResponse<[Project]>.self, from: data)
                 completion(response, nil)
             } catch {
                 completion(nil, error)
@@ -128,7 +155,7 @@ struct APIManager {
         }.resume()
     }
     
-    // 删除项目
+    // 删除项目-已完成
     func deleteProject(projectId: Int, completion: @escaping (ApiResponse<Empty>?, Error?) -> Void) {
         let url = URL(string: "http://127.0.0.1:4523/m2/4334433-3977645-default/165314871")!
         var request = URLRequest(url: url)
@@ -284,7 +311,7 @@ struct APIManager {
         }.resume()
     }
     
-    // 获取项目的所有图片
+    // 获取项目的所有图片-已完成
     func getProjectImages(projectId: Int, completion: @escaping (ApiResponse<[ProjectImage]>?, Error?) -> Void) {
         let url = URL(string: "http://127.0.0.1:4523/m2/4334433-3977645-default/165811946")!
         var request = URLRequest(url: url)
@@ -307,11 +334,11 @@ struct APIManager {
         }.resume()
     }
     
-    // 获取特定项目的模型快照
+    // 获取特定项目的模型快照-已完成
     func getProjectModelSnapshots(projectId: Int, completion: @escaping (ApiResponse<[NerfModel]>?, Error?) -> Void) {
-        let url = URL(string: "http://example.com/nerf/project/get_nerf_snapshots/")!
+        let url = URL(string: "http://127.0.0.1:4523/m2/4334433-3977645-default/167048188")!
         var request = URLRequest(url: url)
-        request.httpMethod = "GET"
+        request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         let body = ["project_id": projectId]
         request.httpBody = try? JSONEncoder().encode(body)
@@ -330,9 +357,9 @@ struct APIManager {
         }.resume()
     }
     
-    // 删除特定项目的模型快照
+    // 删除特定项目的模型快照-已完成
     func deleteProjectModelSnapshots(projectId: Int, completion: @escaping (ApiResponse<Empty>?, Error?) -> Void) {
-        let url = URL(string: "http://example.com/nerf/project/delete_nerf_snapshots/")!
+        let url = URL(string: "http://127.0.0.1:4523/m2/4334433-3977645-default/167041484")!
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -353,11 +380,11 @@ struct APIManager {
         }.resume()
     }
     
-    // 获取项目的所有图片位姿
+    // 获取项目的所有图片位姿-已完成
     func getProjectPoses(projectId: Int, completion: @escaping (ApiResponse<[Pose]>?, Error?) -> Void) {
-        let url = URL(string: "http://example.com/nerf/project/get_poses/")!
+        let url = URL(string: "http://127.0.0.1:4523/m2/4334433-3977645-default/167047919")!
         var request = URLRequest(url: url)
-        request.httpMethod = "GET"
+        request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         let body = ["project_id": projectId]
         request.httpBody = try? JSONEncoder().encode(body)
@@ -376,9 +403,9 @@ struct APIManager {
         }.resume()
     }
     
-    // 删除项目的所有图片位姿
+    // 删除项目的所有图片位姿-已完成
     func deleteProjectPoses(projectId: Int, completion: @escaping (ApiResponse<Empty>?, Error?) -> Void) {
-        let url = URL(string: "http://example.com/nerf/project/delete_poses/")!
+        let url = URL(string: "http://127.0.0.1:4523/m2/4334433-3977645-default/167034470")!
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -399,11 +426,11 @@ struct APIManager {
         }.resume()
     }
     
-    // 获取项目的所有渲染视频文件
+    // 获取项目的所有渲染视频文件-已完成
     func getProjectVideos(projectId: Int, completion: @escaping (ApiResponse<[Video]>?, Error?) -> Void) {
-        let url = URL(string: "http://example.com/nerf/project/get_videos/")!
+        let url = URL(string: "http://127.0.0.1:4523/m2/4334433-3977645-default/167048641")!
         var request = URLRequest(url: url)
-        request.httpMethod = "GET"
+        request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         let body = ["project_id": projectId]
         request.httpBody = try? JSONEncoder().encode(body)
@@ -422,9 +449,9 @@ struct APIManager {
         }.resume()
     }
     
-    // 删除项目的所有渲染视频文件
+    // 删除项目的所有渲染视频文件-已完成
     func deleteProjectVideos(projectId: Int, completion: @escaping (ApiResponse<Empty>?, Error?) -> Void) {
-        let url = URL(string: "http://example.com/nerf/project/delete_videos/")!
+        let url = URL(string: "http://127.0.0.1:4523/m2/4334433-3977645-default/167044572")!
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")

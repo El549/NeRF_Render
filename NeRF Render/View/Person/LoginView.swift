@@ -8,11 +8,23 @@
 import SwiftUI
 
 struct LoginView: View {
+    @ObservedObject var viewModel: PersonViewModel
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        VStack {
+            TextField("电子邮件", text: $viewModel.inputEmail)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding()
+            SecureField("密码", text: $viewModel.inputPassword)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding()
+            Button("登录") {
+                viewModel.login()
+            }
+        }
     }
 }
 
 #Preview {
-    LoginView()
+    LoginView(viewModel: PersonViewModel())
 }

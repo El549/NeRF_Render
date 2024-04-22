@@ -7,14 +7,14 @@
 
 import SwiftUI
 
-import SwiftUI
 
 struct IndexView: View {
     @StateObject private var viewModel = ProjectsViewModel()
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
+                // 项目列表
                 List {
                     ForEach(viewModel.projects, id: \.id) { project in
                         NavigationLink(destination: ProjectDetailView(viewModel: ProjectDetailViewModel(project: project))) {
@@ -31,11 +31,13 @@ struct IndexView: View {
                 }
                 .sheet(isPresented: $viewModel.showingAddProjectSheet) {
                     NewProjectSheetView(viewModel: viewModel)
+                        .presentationDetents([.medium])
                 }
                 .onAppear {
                     viewModel.fetchProjects()
                 }
-
+                
+                // 添加新项目按钮
                 VStack {
                     Spacer()
                     Button("添加新项目") {

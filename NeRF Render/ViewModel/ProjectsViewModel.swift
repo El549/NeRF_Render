@@ -12,6 +12,7 @@ class ProjectsViewModel: ObservableObject {
     @Published var newProjectTitle: String = ""
     @Published var showingAddProjectSheet: Bool = false
 
+    // 查询项目列表
     func fetchProjects() {
         // 实现从数据源获取项目的逻辑
         APIManager.shared.fetchProjects { response, error in
@@ -25,6 +26,7 @@ class ProjectsViewModel: ObservableObject {
         }
     }
 
+    // 添加项目
     func addProject() {
         if newProjectTitle.isEmpty {
             return
@@ -33,7 +35,7 @@ class ProjectsViewModel: ObservableObject {
         APIManager.shared.createProject(title: newProjectTitle) { response, error in
             if let response = response, response.success {
                 DispatchQueue.main.async {
-                    self.projects.append(response.data)  // Assuming response.data is the new project
+                    self.projects.append(response.data[0])  // Assuming response.data is the new project
                     self.newProjectTitle = ""
                     self.showingAddProjectSheet = false
                 }
@@ -48,6 +50,7 @@ class ProjectsViewModel: ObservableObject {
         fetchProjects()
     }
 
+    // 删除项目
     func deleteProject(at offsets: IndexSet) {
         // 删除项目的逻辑
         offsets.forEach { index in

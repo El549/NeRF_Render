@@ -22,19 +22,19 @@ struct Empty: Codable {}
 struct User: Identifiable, Codable {
     var id: Int
     var email: String
-    var passward: String
-    var lastLogin: Date
+    var password: String?
+    var lastLogin: Date?
     
     // 提供示例数据
     static let example = User(
         id: 1,
         email: "user_first@qq.com",
-        passward: "user_passward",
+        password: "user_passward",
         lastLogin: Date()
     )
     
-    enum Coding: String, CodingKey {
-        case id, email, passward, lastLogin = "last_login"
+    enum CodingKeys: String, CodingKey {
+        case id, email, password, lastLogin = "last_login"
     }
 }
 

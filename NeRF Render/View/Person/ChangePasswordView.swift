@@ -8,11 +8,23 @@
 import SwiftUI
 
 struct ChangePasswordView: View {
+    @ObservedObject var viewModel: PersonViewModel
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        VStack {
+            TextField("旧密码", text: $viewModel.inputOldPassword)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding()
+            SecureField("新密码", text: $viewModel.inputNewPassword)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding()
+            Button("提交") {
+                viewModel.changePassword()
+            }
+        }
     }
 }
 
 #Preview {
-    ChangePasswordView()
+    ChangePasswordView(viewModel: PersonViewModel())
 }
