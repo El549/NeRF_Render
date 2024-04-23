@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 class ProjectDetailViewModel: ObservableObject {
     @Published var projectImages: [ProjectImage] = []
@@ -18,14 +19,14 @@ class ProjectDetailViewModel: ObservableObject {
     @Published var timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
     
     let project: Project
-    @Published var n_steps: Int = 5000
+    @Published var n_steps: Int = 1000
     let n_steps_arrays = [1000, 5000, 15000, 20000, 50000]
 
     @Published var selected_trajectory = "1"
     let trajectories = ["1", "2", "3", "4"]
 
-    @Published var video_fps = 30
-    @Published var video_n_seconds = 10
+    @Published var video_fps = 5
+    @Published var video_n_seconds = 1
     
 //    @Published var isComputePoseCompleted = false
 //    @Published var isTrainingCompleted = false
@@ -34,6 +35,9 @@ class ProjectDetailViewModel: ObservableObject {
     @Published var hasComputePoseFile = false
     @Published var hasNerfModel = false
     @Published var hasVedio = false
+    
+    @Published var receivedMessage: String = ""
+    @Published var operationCompleted: Bool = false  // 新增操作完成标志
 
     init(project: Project) {
         self.project = project
@@ -41,6 +45,8 @@ class ProjectDetailViewModel: ObservableObject {
     
     // 查询位姿文件列表
     func fetchPoses() {
+        // 清空位姿文件列表
+        poses.removeAll()
         // 实现从数据源获取项目的逻辑
         APIManager.shared.getProjectPoses(projectId: project.id) { response, error in
             if let poses = response?.data {
@@ -78,6 +84,8 @@ class ProjectDetailViewModel: ObservableObject {
     
     // 查询模型文件
     func fetchNerfModel() {
+        // 清空模型文件列表
+        nerfModels.removeAll()
         // 实现从数据源获取项目的逻辑
         APIManager.shared.getProjectModelSnapshots(projectId: project.id) { response, error in
             if let nerfModels = response?.data {
@@ -115,6 +123,8 @@ class ProjectDetailViewModel: ObservableObject {
 
     // 查询视频文件
     func fetchVideo() {
+        // 清空视频文件列表
+        videos.removeAll()
         // 实现从数据源获取项目的逻辑
         APIManager.shared.getProjectVideos(projectId: project.id) { response, error in
             if let videos = response?.data {
@@ -152,6 +162,9 @@ class ProjectDetailViewModel: ObservableObject {
     
     // 查询图片
     func fetchImages() {
+        // 清空图片列表
+        projectImages.removeAll()
+        
         APIManager.shared.getProjectImages(projectId: project.id) { response, error in
             DispatchQueue.main.async {
                 if let images = response?.data {
@@ -174,24 +187,162 @@ class ProjectDetailViewModel: ObservableObject {
 
     func computePose() {
         startProgress()
-        // 位姿计算函数实现
-        fetchPoses()
+
+        let urlString = "ws://192.168.31.161:8000/ws/pose/"
+        guard let url = URL(string: urlString) else {
+            print("Invalid URL")
+            return
+        }
+
+        WebSocketManager.shared.connect(to: url) {
+            print("Connection established.")
+        }
+
+        WebSocketManager.shared.onReceivedMessage = { [weak self] message in
+            var shouldDisconnect = false  // 初始设为不断开连接
+            DispatchQueue.main.async {
+                if message.contains("success") {
+                    self?.receivedMessage = message
+                    
+                    self?.operationCompleted = true  // 标记操作已完成
+                    shouldDisconnect = true  // 收到成功消息，需要断开连接
+                    
+                    // 操作成功，重新加载位姿数据
+                    self?.fetchPoses()
+                } else {
+                    self?.receivedMessage = "In progress: \(message)"
+                }
+                if shouldDisconnect {
+                    WebSocketManager.shared.disconnect()
+                    // 设置一个计时器来清除勾选标志
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        self?.operationCompleted = false  // 2秒后清除勾选标志
+                        self?.isProgressing = false //关闭窗口
+                    }
+                }
+            }
+            return shouldDisconnect  // 返回是否需要断开连接的布尔值
+        }
+
+        let message = [
+            "project_id": "\(project.id)",
+            "colmap_matcher": "exhaustive",
+            "aabb_scale": "4"
+        ]
+        WebSocketManager.shared.send(data: message)
     }
+
 
     func startTraining() {
         startProgress()
+        
         // 开始训练函数实现
-        fetchNerfModel()
+        let urlString = "ws://192.168.31.161:8000/ws/train/"
+        guard let url = URL(string: urlString) else {
+            print("Invalid URL")
+            return
+        }
+
+        WebSocketManager.shared.connect(to: url) {
+            print("Connection established.")
+        }
+
+        WebSocketManager.shared.onReceivedMessage = { [weak self] message in
+            var shouldDisconnect = false  // 初始设为不断开连接
+            DispatchQueue.main.async {
+                if message.contains("success") {
+                    self?.receivedMessage = message
+                    
+                    self?.operationCompleted = true  // 标记操作已完成
+                    shouldDisconnect = true  // 收到成功消息，需要断开连接
+                    
+                    // 操作成功，重新加载位姿数据
+                    self?.fetchNerfModel()
+                } else {
+                    self?.receivedMessage = "In progress: \(message)"
+                }
+                if shouldDisconnect {
+                    WebSocketManager.shared.disconnect()
+                    // 设置一个计时器来清除勾选标志
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        self?.operationCompleted = false  // 2秒后清除勾选标志
+                        self?.isProgressing = false //关闭窗口
+                    }
+                }
+            }
+            return shouldDisconnect  // 返回是否需要断开连接的布尔值
+        }
+
+        let message = [
+            "project_id": "\(project.id)",
+            "n_steps": "\(n_steps)"
+        ]
+        WebSocketManager.shared.send(data: message)
     }
 
     func startRendering() {
         startProgress()
+        
         // 开始渲染函数实现
-        fetchVideo()
+        let urlString = "ws://192.168.31.161:8000/ws/render/"
+        guard let url = URL(string: urlString) else {
+            print("Invalid URL")
+            return
+        }
+
+        WebSocketManager.shared.connect(to: url) {
+            print("Connection established.")
+        }
+
+        WebSocketManager.shared.onReceivedMessage = { [weak self] message in
+            var shouldDisconnect = false  // 初始设为不断开连接
+            DispatchQueue.main.async {
+                if message.contains("success") {
+                    self?.receivedMessage = message
+                    
+                    self?.operationCompleted = true  // 标记操作已完成
+                    shouldDisconnect = true  // 收到成功消息，需要断开连接
+                    
+                    // 操作成功，重新加载位姿数据
+                    self?.fetchVideo()
+                } else {
+                    self?.receivedMessage = "In progress: \(message)"
+                }
+                if shouldDisconnect {
+                    WebSocketManager.shared.disconnect()
+                    // 设置一个计时器来清除勾选标志
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        self?.operationCompleted = false  // 2秒后清除勾选标志
+                        self?.isProgressing = false //关闭窗口
+                    }
+                }
+            }
+            return shouldDisconnect  // 返回是否需要断开连接的布尔值
+        }
+
+        let message = [
+            "project_id": "\(project.id)",
+            "trajectory_name": "base",
+            "video_fps": "\(video_fps)",
+            "video_n_seconds": "\(video_n_seconds)",
+            "video_spp": "8",
+            "video_output": "output_video.mp4"
+        ]
+        WebSocketManager.shared.send(data: message)
+
     }
     
     func DownloadVideo() {
-        startProgress()
         // 下载视频函数实现
+        guard let urlString = videos.first?.videoUrl, let url = URL(string: urlString) else {
+            print("Invalid URL or no video available")
+            return
+        }
+
+        // 确保在主线程中执行UI操作
+        DispatchQueue.main.async {
+            UIApplication.shared.open(url)
+        }
     }
+    
 }

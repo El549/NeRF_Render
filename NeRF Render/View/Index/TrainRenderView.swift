@@ -23,10 +23,12 @@ struct TrainRenderView: View {
                             .onDelete(perform: viewModel.deletePose)
                             
                             Button("重新计算", action: viewModel.computePose)
+                                .disabled(viewModel.isProgressing)
                         } else {
 //                            Button("未训练，无位姿文件", action: viewModel.computePose)
 //                                .disabled(!viewModel.hasComputePoseFile)
                             Button("开始计算", action: viewModel.computePose)
+                                .disabled(viewModel.isProgressing)
                         }
                     }
                     
@@ -41,11 +43,13 @@ struct TrainRenderView: View {
                             
                             Button("重新训练", action: viewModel.startTraining)
                                 .disabled(!viewModel.hasComputePoseFile)
+                                .disabled(viewModel.isProgressing)
                         } else {
 //                            Button("未训练，无模型文件", action: viewModel.startTraining)
 //                                .disabled(!viewModel.hasNerfModel)
                             Button("开始训练", action: viewModel.startTraining)
                                 .disabled(!viewModel.hasComputePoseFile)
+                                .disabled(viewModel.isProgressing)
                         }
                     }
                     
@@ -57,9 +61,11 @@ struct TrainRenderView: View {
                         if viewModel.hasVedio {
                             Button("重新渲染", action: viewModel.startRendering)
                                 .disabled(!viewModel.hasNerfModel)
+                                .disabled(viewModel.isProgressing)
                         } else {
                             Button("开始渲染", action: viewModel.startRendering)
                                 .disabled(!viewModel.hasNerfModel)
+                                .disabled(viewModel.isProgressing)
                         }
                         
                     }
@@ -87,16 +93,36 @@ struct TrainRenderView: View {
 
                 
                 if viewModel.isProgressing {
-                    ProgressView("正在处理...", value: viewModel.progressAmount, total: 100)
-                        .onReceive(viewModel.timer) { _ in
-                            if viewModel.progressAmount < 100 {
-                                viewModel.progressAmount += 1
+                    if !viewModel.operationCompleted {
+                        VStack {
+                            HStack {
+                                Spacer()
+                                
+                                Text("Received Message: ")
+                                    .font(.headline)
+                                
+                                Spacer()
+                                
+                                ProgressView() // 默认的旋转指示器
+                                    .progressViewStyle(CircularProgressViewStyle()) // 明确使用圆形样式
+                                    .scaleEffect(1.5) // 放大指示器的大小
+                                    .padding()
+                                
+                                Spacer()
                             }
-                            if viewModel.progressAmount == 100 {
-                                viewModel.isProgressing = false
-                            }
+                            Text(viewModel.receivedMessage)
                         }
                         .padding()
+                    } else {
+                        VStack {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.blue)
+                                .font(.largeTitle)
+                                .scaleEffect(1.5)  // 放大图标
+                                .transition(.scale)  // 添加缩放动画
+                        }
+                        .padding()
+                    }
                 }
             }
         }

@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import AVFoundation
+import _AVKit_SwiftUI
 
 struct ProjectDetailView: View {
     @StateObject var viewModel: ProjectDetailViewModel
@@ -16,10 +18,23 @@ struct ProjectDetailView: View {
                 projectInformationSectionView
                 
                 NavigationLink(destination: TrainRenderView(viewModel: viewModel)) {
-                    Text("模型训练和视频渲染")
+                    HStack {
+                        Text("模型训练和视频渲染")
+                        Image(systemName: "chevron.right")
+                    }
                 }
                 .padding()
+                
+                if let urlString = viewModel.videos.first?.videoUrl, let url = URL(string: urlString) {
 
+                    VideoPlayer(player: AVPlayer(url: URL(string: "https://v-cdn.zjol.com.cn/276982.mp4")!))
+                            .edgesIgnoringSafeArea(.all)
+                            .aspectRatio(16/9, contentMode: .fit)
+                            .frame(width: 360)
+                            .cornerRadius(8)
+                } else {
+                    Text("No video URL available")
+                }
             }
             
             actionButtonsSectionView
@@ -31,7 +46,12 @@ struct ProjectDetailView: View {
         .navigationTitle("项目详情")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-            viewModel.fetchImages()
+            if viewModel.projectImages.isEmpty{
+                viewModel.fetchImages()
+            }
+            if viewModel.videos.isEmpty {
+                viewModel.fetchVideo()
+            }
         }
     }
 
