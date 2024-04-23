@@ -17,6 +17,8 @@ struct NewProjectSheetView: View {
             TextField("输入新项目标题", text: $viewModel.newProjectTitle)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding()
+                .autocapitalization(.none) // 关闭首字母大写
+                .disableAutocorrection(true) // 关闭自动语法检测
 
             Button("添加项目") {
                 viewModel.addProject()

@@ -9,19 +9,19 @@ import SwiftUI
 
 
 struct IndexView: View {
-    @StateObject private var viewModel = ProjectsViewModel()
+    @StateObject var projectsViewModel: ProjectsViewModel
 
     var body: some View {
         NavigationStack {
             ZStack {
                 // 项目列表
                 List {
-                    ForEach(viewModel.projects, id: \.id) { project in
+                    ForEach(projectsViewModel.projects, id: \.id) { project in
                         NavigationLink(destination: ProjectDetailView(viewModel: ProjectDetailViewModel(project: project))) {
                             Text(project.title)
                         }
                     }
-                    .onDelete(perform: viewModel.deleteProject)
+                    .onDelete(perform: projectsViewModel.deleteProject)
                 }
                 .navigationTitle("项目列表")
                 .toolbar {
@@ -29,19 +29,19 @@ struct IndexView: View {
                         EditButton()
                     }
                 }
-                .sheet(isPresented: $viewModel.showingAddProjectSheet) {
-                    NewProjectSheetView(viewModel: viewModel)
+                .sheet(isPresented: $projectsViewModel.showingAddProjectSheet) {
+                    NewProjectSheetView(viewModel: projectsViewModel)
                         .presentationDetents([.medium])
                 }
                 .onAppear {
-                    viewModel.fetchProjects()
+                    projectsViewModel.fetchProjects()
                 }
                 
                 // 添加新项目按钮
                 VStack {
                     Spacer()
                     Button("添加新项目") {
-                        viewModel.showingAddProjectSheet = true
+                        projectsViewModel.showingAddProjectSheet = true
                     }
                     .buttonStyle(.borderedProminent)
                     .padding()
@@ -53,5 +53,5 @@ struct IndexView: View {
 
 
 #Preview {
-    IndexView()
+    IndexView(projectsViewModel: ProjectsViewModel())
 }

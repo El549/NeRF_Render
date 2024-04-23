@@ -8,36 +8,29 @@
 import SwiftUI
 
 struct PersonView: View {
-    @StateObject var viewModel:PersonViewModel
+    @StateObject var personViewModel:PersonViewModel
+    @StateObject var projectsViewModel: ProjectsViewModel
     
     var body: some View {
         NavigationStack {
             List {
                 
                 Section {
-                    if viewModel.isLoggedIn {
-                        Text("Email: \(viewModel.user?.email ?? "未登录")")
-                        Button(action: {
-                            viewModel.logout()
-                        }) {
-                            HStack {
-                                Image(systemName: "person.fill")
-                                Text("注销")
-                            }
-                        }
+                    if personViewModel.isLoggedIn {
+                        Text("Email: \(personViewModel.user?.email ?? "未登录")")
                         
                         Button(action: {
-                            viewModel.showingChangePasswordSheet = true
+                            personViewModel.showingChangePasswordSheet = true
                         }) {
                             HStack {
-                                Image(systemName: "person.fill")
+                                Image(systemName: "person.badge.key.fill")
                                 Text("修改密码")
                             }
                         }
                         
                     } else {
                         Button(action: {
-                            viewModel.showingLoginSheet = true
+                            personViewModel.showingLoginSheet = true
                         }) {
                             HStack {
                                 Image(systemName: "person.fill")
@@ -46,11 +39,26 @@ struct PersonView: View {
                         }
                         
                         Button(action: {
-                            viewModel.showingRegisterSheet = true
+                            personViewModel.showingRegisterSheet = true
                         }) {
                             HStack {
-                                Image(systemName: "person.fill")
+                                Image(systemName: "person.fill.badge.plus")
                                 Text("注册")
+                            }
+                        }
+                    }
+                }
+                
+                Section {
+                    if personViewModel.isLoggedIn {
+                        Button(action: {
+                            personViewModel.logout()
+                        }) {
+                            HStack {
+                                Spacer()
+                                Text("退出登录")
+                                    .foregroundColor(.red)
+                                Spacer()
                             }
                         }
                     }
@@ -62,7 +70,7 @@ struct PersonView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
-                        viewModel.showingSettingsSheet = true
+                        personViewModel.showingSettingsSheet = true
                     }) {
                         HStack {
                             Image(systemName: "gearshape.fill")
@@ -70,19 +78,19 @@ struct PersonView: View {
                     }
                 }
             }
-            .sheet(isPresented: $viewModel.showingLoginSheet) {
-                LoginView(viewModel: viewModel)
+            .sheet(isPresented: $personViewModel.showingLoginSheet) {
+                LoginView(viewModel: personViewModel)
                     .presentationDetents([.medium])
             }
-            .sheet(isPresented: $viewModel.showingRegisterSheet) {
-                RegisterView(viewModel: viewModel)
+            .sheet(isPresented: $personViewModel.showingRegisterSheet) {
+                RegisterView(viewModel: personViewModel)
                     .presentationDetents([.medium])
             }
-            .sheet(isPresented: $viewModel.showingChangePasswordSheet) {
-                ChangePasswordView(viewModel: viewModel)
+            .sheet(isPresented: $personViewModel.showingChangePasswordSheet) {
+                ChangePasswordView(viewModel: personViewModel)
                     .presentationDetents([.medium])
             }
-            .sheet(isPresented: $viewModel.showingSettingsSheet) {
+            .sheet(isPresented: $personViewModel.showingSettingsSheet) {
                 SettingsView()
                     .presentationDetents([.medium])
             }
@@ -94,5 +102,5 @@ struct PersonView: View {
 
 
 #Preview {
-    PersonView(viewModel: PersonViewModel())
+    PersonView(personViewModel: PersonViewModel(), projectsViewModel: ProjectsViewModel())
 }

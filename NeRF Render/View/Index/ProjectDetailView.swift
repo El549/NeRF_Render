@@ -28,7 +28,6 @@ struct ProjectDetailView: View {
             Spacer()
         }
         .padding()
-        .background(Color("Background"))
         .navigationTitle("项目详情")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
@@ -51,6 +50,7 @@ struct ProjectDetailView: View {
                     ForEach(viewModel.projectImages, id: \.id) { image in
                         AsyncImage(url: URL(string: image.imageUrl)) { image in
                             image.resizable()
+                                .aspectRatio(contentMode: .fill) // 保持图片的长宽比
                         } placeholder: {
                             ProgressView()
                         }

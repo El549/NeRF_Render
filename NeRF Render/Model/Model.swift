@@ -76,7 +76,7 @@ struct ProjectImage: Identifiable, Codable {
     )
 
     enum CodingKeys: String, CodingKey {
-        case id, imageUrl = "image_file", uploadedAt = "uploaded_at", projectId = "project_id"
+        case id, imageUrl = "url", uploadedAt = "uploaded_at", projectId = "project_id"
     }
 }
 
@@ -116,7 +116,7 @@ struct Pose: Identifiable, Codable {
     )
 
     enum CodingKeys: String, CodingKey {
-        case id, fileUrl = "file", uploadedAt = "uploaded_at", projectId = "project_id"
+        case id, fileUrl = "url", uploadedAt = "uploaded_at", projectId = "project_id"
     }
 }
 
@@ -136,7 +136,7 @@ struct NerfModel: Identifiable, Codable {
     )
 
     enum CodingKeys: String, CodingKey {
-        case id, fileUrl = "file", uploadedAt = "uploaded_at", projectId = "project_id"
+        case id, fileUrl = "url", uploadedAt = "uploaded_at", projectId = "project_id"
     }
 }
 
