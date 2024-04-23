@@ -18,7 +18,11 @@ struct TrainRenderView: View {
                     Section("位姿计算") {
                         if viewModel.hasComputePoseFile {
                             ForEach(viewModel.poses, id: \.id) { pose in
-                                Text(pose.fileUrl)
+//                                Text(pose.fileUrl)
+                                HStack {
+                                    Image(systemName: "doc")
+                                    Text("transforms.json")
+                                }
                             }
                             .onDelete(perform: viewModel.deletePose)
                             
@@ -37,7 +41,11 @@ struct TrainRenderView: View {
                         
                         if viewModel.hasNerfModel {
                             ForEach(viewModel.nerfModels, id: \.id) { nerfModel in
-                                Text(nerfModel.fileUrl)
+//                                Text(nerfModel.fileUrl)
+                                HStack {
+                                    Image(systemName: "doc")
+                                    Text("snap.ingp")
+                                }
                             }
                             .onDelete(perform: viewModel.deleteNerfModel)
                             
@@ -73,7 +81,11 @@ struct TrainRenderView: View {
                     Section("视频下载") {
                         if viewModel.hasVedio {
                             ForEach(viewModel.videos, id: \.id) { video in
-                                Text(video.videoUrl)
+//                                Text(video.videoUrl)
+                                HStack {
+                                    Image(systemName: "doc")
+                                    Text("output_video.mp4")
+                                }
                             }
                             .onDelete(perform: viewModel.deleteVideo)
                         } else {
