@@ -278,7 +278,7 @@ struct APIManager {
     
     // 删除单张图片
     func deleteImage(imageId: Int, completion: @escaping (ApiResponse<Empty>?, Error?) -> Void) {
-        let url = URL(string: "http://example.com/nerf/project/delete_image/")!
+        let url = URL(string: APIManager.baseUrl + "/nerf/project/delete_image/")!
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")

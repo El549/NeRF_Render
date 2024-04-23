@@ -25,16 +25,16 @@ struct ProjectDetailView: View {
                 }
                 .padding()
                 
-                if let urlString = viewModel.videos.first?.videoUrl, let url = URL(string: urlString) {
-
-                    VideoPlayer(player: AVPlayer(url: URL(string: "https://v-cdn.zjol.com.cn/276982.mp4")!))
-                            .edgesIgnoringSafeArea(.all)
-                            .aspectRatio(16/9, contentMode: .fit)
-                            .frame(width: 360)
-                            .cornerRadius(8)
-                } else {
-                    Text("No video URL available")
-                }
+//                if let urlString = viewModel.videos.first?.videoUrl, let url = URL(string: urlString) {
+//
+//                    VideoPlayer(player: AVPlayer(url: URL(string: "https://v-cdn.zjol.com.cn/276982.mp4")!))
+//                            .edgesIgnoringSafeArea(.all)
+//                            .aspectRatio(16/9, contentMode: .fit)
+//                            .frame(width: 360)
+//                            .cornerRadius(8)
+//                } else {
+//                    Text("No video URL available")
+//                }
             }
             
             actionButtonsSectionView
@@ -46,12 +46,10 @@ struct ProjectDetailView: View {
         .navigationTitle("项目详情")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-            if viewModel.projectImages.isEmpty{
+            if viewModel.projectImages.isEmpty {
                 viewModel.fetchImages()
             }
-            if viewModel.videos.isEmpty {
-                viewModel.fetchVideo()
-            }
+//            viewModel.fetchVideo()
         }
     }
 
@@ -67,7 +65,8 @@ struct ProjectDetailView: View {
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
-                    ForEach(viewModel.projectImages, id: \.id) { image in
+                    ForEach(viewModel.projectImages.indices, id: \.self) { index in
+                        let image = viewModel.projectImages[index]
                         AsyncImage(url: URL(string: image.imageUrl)) { image in
                             image.resizable()
                                 .aspectRatio(contentMode: .fill) // 保持图片的长宽比
@@ -76,9 +75,20 @@ struct ProjectDetailView: View {
                         }
                         .frame(width: 192, height: 108)
                         .cornerRadius(8)
+                        .contextMenu {
+                            
+                            Button(role: .destructive, action: {
+                                viewModel.deleteImage(at: index)
+                            }) {
+                                Label("删除", systemImage: "trash")
+                            }
+
+                            
+                        }
                     }
                 }
             }
+
         }
         .padding(.vertical)
     }

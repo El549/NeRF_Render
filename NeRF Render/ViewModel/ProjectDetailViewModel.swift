@@ -175,6 +175,21 @@ class ProjectDetailViewModel: ObservableObject {
             }
         }
     }
+    
+    func deleteImage(at index: Int) {
+        let imageId = projectImages[index].id
+        APIManager.shared.deleteImage(imageId: imageId) { response, error in
+            if response?.success == true {
+                DispatchQueue.main.async {
+                    self.projectImages.remove(at: index)
+                    print("Image deleted successfully")
+                }
+            } else {
+                print("Failed to delete image: \(error?.localizedDescription ?? "Unknown error")")
+            }
+        }
+    }
+
 
     func startProgress() {
         isProgressing = true
